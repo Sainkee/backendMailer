@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact Form</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f9f9f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      form {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 400px;
+        box-sizing: border-box;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #555;
+      }
+      input[type="text"],
+      input[type="email"],
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 16px;
+      }
+      .error {
+        color: red;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      button {
+        background-color: #4caf50;
+        color: #fff;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: #45a049;
+      }
+      #responseMessage {
+        margin-top: 20px;
+        font-size: 16px;
+        text-align: center;
+      }
+      @media (max-width: 480px) {
+        form {
+          padding: 15px;
+        }
+        input[type="text"],
+        input[type="email"],
+        textarea {
+          padding: 8px;
+        }
+        button {
+          padding: 10px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <form id="contactForm" action="/send" method="post">
+      <h1>Send Mail</h1>
+      <label for="subject">Subject:</label>
+      <input type="text" id="subject" name="subject" required />
+      <div id="subjectError" class="error"></div>
+
+      <label for="email">To Mail:</label>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="abc@gmail.com"
+        required
+      />
+      <div id="emailError" class="error"></div>
+
+      <label for="message">Message:</label>
+      <textarea id="message" name="message" required></textarea>
+      <div id="messageError" class="error"></div>
+
+      <button type="submit">Send</button>
+      <div id="responseMessage"></div>
+    </form>
+
+    <script>
+      function validateSubject(subject) {
+        if (subject.trim() === "") {
+          return "Subject is required.";
+        }
+        return "";
+      }
+
+      function validateEmail(email) {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email.trim() === "") {
+          return "Email is required.";
+        } else if (!emailPattern.test(email)) {
+          return "Please enter a valid email address.";
+        }
+        return "";
+      }
+
+      function validateMessage(message) {
+        if (message.trim() === "") {
+          return "Message is required.";
+        }
+        return "";
+      }
+
+      document
+        .getElementById("contactForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault(); // Prevent the form from submitting the traditional way
+
+          const subject = document.getElementById("subject").value;
+          const email = document.getElementById("email").value;
+          const message = document.getElementById("message").value;
+
+          const subjectError = validateSubject(subject);
+          const emailError = validateEmail(email);
+          const messageError = validateMessage(message);
+
+          document.getElementById("subjectError").innerText = subjectError;
+          document.getElementById("emailError").innerText = emailError;
+          document.getElementById("messageError").innerText = messageError;
+
+          if (subjectError || emailError || messageError) {
+            return; // If there are validation errors, do not proceed with the form submission
+          }
+
+          const form = event.target;
+          const formData = new FormData(form);
+
+          // Convert form data to JSON
+          const formJson = JSON.stringify(
+            Object.fromEntries(formData.entries())
+          );
+
+          try {
+            const response = await fetch(form.action, {
+              method: form.method,
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: formJson,
+            });
+
+            const result = await response.text(); // Get the response text
+
+            document.getElementById("responseMessage").innerText = result;
+          } catch (error) {
+            document.getElementById("responseMessage").innerText =
+              "Error sending email: " + error.message;
+          }
+        });
+    </script>
+  </body>
+</html>
